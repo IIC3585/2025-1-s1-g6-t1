@@ -51,8 +51,8 @@ const newColumn = ["993456780", "995674543", "995674543", "995674543"]
 
 const file = 'data.csv';
 printCSVData(file);
-// insertrow(file, 0, newRow);
-// insertcolumn(file, 3, newColumn);
+insertrow(file, 0, newRow);
+insertcolumn(file, 3, newColumn);
 
 //Acá la parte de swap
 
