@@ -53,3 +53,35 @@ const file = 'data.csv';
 printCSVData(file);
 insertrow(file, 0, newRow);
 insertcolumn(file, 3, newColumn);
+
+//Acá las partes de delete
+
+const rowdelete = async (file, n) => {
+    try {
+        const data = await readCSV(file);
+        if (n >= 0 && n < data.length) {
+            data.splice(n, 1);
+        } else {
+            console.error('Error: No existe la fila indicada');
+        }
+        console.log(data);
+    } catch (error) {
+        console.error('Error leyendo archvo:', error);
+    }
+}
+
+const columndelete = async (file, n) => {
+    try {
+        const data = await readCSV(file);
+        data.forEach(row => {
+            if (n >= 0 && n < row.length) {
+                row.splice(n, 1);
+            }
+        });
+        console.log(data);
+    } catch (error) {
+        console.error('Error leyendo archivo:', error);
+    }
+}
+rowdelete(file, 1);
+columndelete(file, 2);
