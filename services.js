@@ -61,9 +61,9 @@ const swap = async (file, n, m) => {
         const data = await readCSV(file);
         const newData = data.map(row => {
             //Acá hacemos copia y luego el intercambio de columna para cada fila
-            const swappedRow = [...row];
-            [swappedRow[n], swappedRow[m]] = [swappedRow[m], swappedRow[n]];
-            return swappedRow;
+            const swaprow = [...row];
+            [swaprow[n], swaprow[m]] = [swaprow[m], swaprow[n]];
+            return swaprow;
         });
         console.log(newData);
     } catch (error) {
