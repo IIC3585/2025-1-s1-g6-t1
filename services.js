@@ -51,20 +51,36 @@ const newColumn = ["993456780", "995674543", "995674543", "995674543"]
 
 const file = 'data.csv';
 printCSVData(file);
-insertrow(file, 0, newRow);
-insertcolumn(file, 3, newColumn);
+// insertrow(file, 0, newRow);
+// insertcolumn(file, 3, newColumn);
+
+//Acá la parte de swap
+
+const swap = async (file, n, m) => {
+    try {
+        const data = await readCSV(file);
+        const newData = data.map(row => {
+            //Acá hacemos copia y luego el intercambio de columna para cada fila
+            const swappedRow = [...row];
+            [swappedRow[n], swappedRow[m]] = [swappedRow[m], swappedRow[n]];
+            return swappedRow;
+        });
+        console.log(newData);
+    } catch (error) {
+        console.error('Error leyendo archivo:', error);
+    }
+}
+
+swap(file, 0, 2);
 
 //Acá las partes de delete
 
 const rowdelete = async (file, n) => {
     try {
         const data = await readCSV(file);
-        if (n >= 0 && n < data.length) {
-            data.splice(n, 1);
-        } else {
-            console.error('Error: No existe la fila indicada');
-        }
-        console.log(data);
+        //SE mantiene todas las filas menos la de indice n
+        const newData = data.filter((_, index) => index !== n);
+        console.log(newData);
     } catch (error) {
         console.error('Error leyendo archvo:', error);
     }
@@ -73,12 +89,9 @@ const rowdelete = async (file, n) => {
 const columndelete = async (file, n) => {
     try {
         const data = await readCSV(file);
-        data.forEach(row => {
-            if (n >= 0 && n < row.length) {
-                row.splice(n, 1);
-            }
-        });
-        console.log(data);
+        //Acá se saca el elemento n de cada fila
+        const newData = data.map(row => row.filter((_, index) => index !== n));
+        console.log(newData);
     } catch (error) {
         console.error('Error leyendo archivo:', error);
     }
