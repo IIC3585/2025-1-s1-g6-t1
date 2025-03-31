@@ -1,56 +1,49 @@
 const csv = require('@fast-csv/parse');
 const fs = require('fs');
 const path = require('path');
+const _ = require('lodash/fp');
 
-
-const readCSV = (file) => {
+async function* readCSVGenerator(file) {
     const csvFilePath = path.join(__dirname, file);
-    return new Promise((resolve, reject) => {
-        const data = [];
-        fs.createReadStream(csvFilePath)
-        .pipe(csv.parse({ headers: false }))
-        .on('error', error => reject(error))
-        .on('data', row => data.push(row))
-        .on('end', rowCount => resolve(data));
-  });
+    const stream = fs.createReadStream(csvFilePath).pipe(csv.parse({ headers: false }));
+    for await (const row of stream) {
+        yield row;
+    }
 }
 
-const printCSVData = async (file) => {
-  try {
+const readCSV = async (file) => {
+    const data = [];
+    for await (const row of readCSVGenerator(file)) {
+        data.push(row);
+    }
+    return data;
+};
+
+const logResult = _.curry((message, data) => {
+    console.log(message, data);
+});
+
+const transformCSVToUpper = _.map(_.map(_.toUpper));
+
+const CSVToUpper = async (file) => {
     const data = await readCSV(file);
-    console.log(data);
-  } catch (error) {
-    console.error('Error reading CSV:', error);
-  }
-}
+    const transformedData = transformCSVToUpper(data);
+    logResult('Transformed CSV:', transformedData);
+};
 
-//2
 const rowstocolumns = async (file) => {
-    try {
-        const data = await readCSV(file);
-        const transposed = data[0].map((_, colIndex) => data.map(row => row[colIndex]));
-        console.log(transposed.map(row => row.join(',')).join('\n'));
-    } catch (error) {
-        console.error('Error processing CSV:', error);
-    }
+    const data = await readCSV(file);
+    const transposed = _.zip(...data);
+    logResult('Transposed CSV:', transposed);
 };
 
-//3
-const columnstorows = async (file) => {
-    try {
-        const data = await readCSV(file);
-        const transposed = data[0].map((_, colIndex) => data.map(row => row[colIndex]));
-        console.log(transposed.map(row => row.join(',')).join('\n'));
-    } catch (error) {
-        console.error('Error processing CSV:', error);
-    }
-};
+const columnstorows = rowstocolumns; 
 
 const insertrow = async (file, n, row) => {
     try {
         const data = await readCSV(file);
         data.splice(n, 0, row);
-        console.log(data);
+        logResult('Inserted Row:', data);
     } catch (error) {
         console.error('Error reading CSV:', error);
     }
@@ -62,67 +55,58 @@ const insertcolumn = async (file, n, column) => {
         data.forEach((row, i) => {
             row.splice(n, 0, column[i]);
         });
-        console.log(data);
+        logResult('Inserted Column:', data);
     } catch (error) {
         console.error('Error reading CSV:', error);
     }
 }
 
-
-
-const newRow = ['Borja', 'Errazuriz', 'berrazuriz3@uc.cl']
-const newColumn = ["993456780", "995674543", "995674543", "995674543"]
-
-const file = 'data.csv';
-printCSVData(file);
-
-rowstocolumns(file);
-columnstorows(file);
-
-insertrow(file, 0, newRow);
-insertcolumn(file, 3, newColumn);
-
-//Acá la parte de swap
-
 const swap = async (file, n, m) => {
-    try {
-        const data = await readCSV(file);
-        const newData = data.map(row => {
-            //Acá hacemos copia y luego el intercambio de columna para cada fila
-            const swaprow = [...row];
-            [swaprow[n], swaprow[m]] = [swaprow[m], swaprow[n]];
-            return swaprow;
-        });
-        console.log(newData);
-    } catch (error) {
-        console.error('Error leyendo archivo:', error);
-    }
-}
-
-swap(file, 0, 2);
-
-//Acá las partes de delete
+    const data = await readCSV(file);
+    const newData = _.map(row => {
+        const newRow = [...row];
+        [newRow[n], newRow[m]] = [newRow[m], newRow[n]];
+        return newRow;
+    })(data);
+    logResult('Swapped Columns:', newData);
+};
 
 const rowdelete = async (file, n) => {
-    try {
-        const data = await readCSV(file);
-        //SE mantiene todas las filas menos la de indice n
-        const newData = data.filter((_, index) => index !== n);
-        console.log(newData);
-    } catch (error) {
-        console.error('Error leyendo archvo:', error);
-    }
-}
+    const data = await readCSV(file);
+    const newData = _.remove((_, index) => index === n, data);
+    logResult('Row Deleted:', newData);
+};
 
 const columndelete = async (file, n) => {
-    try {
-        const data = await readCSV(file);
-        //Acá se saca el elemento n de cada fila
-        const newData = data.map(row => row.filter((_, index) => index !== n));
-        console.log(newData);
-    } catch (error) {
-        console.error('Error leyendo archivo:', error);
-    }
-}
-rowdelete(file, 1);
-columndelete(file, 2);
+    const data = await readCSV(file);
+    const newData = _.map(row => _.remove((_, index) => index === n, row), data);
+    logResult('Column Deleted:', newData);
+};
+
+const tohtmltable = async (file) => {
+    const data = await readCSV(file);
+    const html = `<table>\n` + _.flow([
+        _.map(row =>
+            `    <tr>\n` +
+            _.map(cell => `        <td>${cell}</td>\n`, row).join('') +
+            `    </tr>\n`
+        ),
+        rows => rows.join('')
+    ])(data) + `</table>`;
+    logResult('HTML Table:', html);
+};
+
+module.exports = {
+    readCSV,
+    logResult,
+    transformCSVToUpper,
+    CSVToUpper,
+    rowstocolumns,
+    columnstorows,
+    insertrow,
+    insertcolumn,
+    swap,
+    rowdelete,
+    columndelete,
+    tohtmltable
+};
