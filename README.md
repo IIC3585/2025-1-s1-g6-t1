@@ -51,7 +51,6 @@ El código implementa diversos conceptos y técnicas avanzadas de JavaScript y p
 - **Composición y Pipes:**  
   En la función `tohtmltable` se emplea `_.flow` para encadenar funciones que transforman las filas del CSV en una cadena HTML, demostrando un claro ejemplo de composición de funciones al estilo pipe.
 
-- **Chaining:**  
-  Aunque no se utiliza el encadenamiento (*chaining*) de métodos de manera explícita, el código opta por la composición funcional mediante `_.flow`, lo que permite construir procesos de transformación de datos de forma clara y modular.
+- **CSVtoUpper**  
+  Aplicación de una función `CSVtoUpper` que transforma todas las letras del CSV en mayúscula.
 
-Esta integración de conceptos hace que el código sea modular, reutilizable y fácil de mantener, aprovechando las ventajas de la programación funcional en JavaScript.
