@@ -9,7 +9,7 @@ Asegurarse de tener Node.js instalado en tu sistema. También se necesita instal
 
 ### Ejecución del Script
 Se debe guardar el archivo CSV como **data.csv** en el mismo directorio que el script. Luego, se ejecuta el script con:  
-`node script.js`
+`node main.js`
 
 ## Funciones y Características
 
